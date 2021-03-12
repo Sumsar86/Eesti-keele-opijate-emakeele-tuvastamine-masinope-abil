@@ -5,8 +5,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot
 from sklearn import preprocessing
-from sklearn.model_selection import train_test_split
-from sklearn.metrics._plot.confusion_matrix import plot_confusion_matrix
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import (
@@ -185,7 +184,7 @@ def nimi(koht, lõpp):
     return rf"{koht} {i}.{lõpp}"
 
 
-def funktsioon(ds, keel, m):
+def f(ds, keel, m):
     algus = datetime.now()
 
     array = ds.values
@@ -199,7 +198,14 @@ def funktsioon(ds, keel, m):
         X_scaled, y, test_size=0.20, shuffle=True
     )
 
+    results = []
     names = []
+    # f = open(
+    #     r"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Log.txt", "a"
+    # )
+    # f.write("{}\n".format(keel.capitalize()))
+    # f.write("{}\n".format(time.ctime(time.time())))
+    print("\n\n{}".format(keel.capitalize()))
     olek = "sõnatüübid"
     # f = open(
     #     r"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Graafikud\Log.txt",
@@ -214,58 +220,70 @@ def funktsioon(ds, keel, m):
 
     for name, model in m:
         algus2 = datetime.now()
+        kfold = StratifiedKFold(n_splits=10, shuffle=True)
+        try:
+            cv_results = cross_val_score(
+                model,
+                preprocessing.scale(X_train),
+                np.ravel(Y_train),
+                cv=kfold,
+                scoring="accuracy",
+                n_jobs=-1,
+            )
+        except:
+            print(
+                "================================| Error |================================"
+            )
 
-        model.fit(X_train, Y_train)
-
-        names = ["eesti", "soome", "vene"]
-
-        disp = plot_confusion_matrix(
-            model,
-            X_validation,
-            Y_validation,
-            display_labels=names,
-            cmap=pyplot.cm.Blues,
-            normalize="true",
-        )
-        disp.ax_.set_title(f"Normaliseeritud eksimismaatriks {name}")
-
-        pyplot.draw()
-        # pyplot.savefig(
-        #     nimi(
-        #         fr"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Graafikud\Lõplikud\Normaliseeritud eksimismaatriks {name} ",
-        #         "png",
-        #     ),
-        #     bbox_inches="tight",
-        #     dpi=100,
-        # )
+        results.append(cv_results)
+        names.append(name)
 
         lõpp2 = datetime.now()
         aeg2 = lõpp2 - algus2
 
         # f.write(
-        #     "{:40s} {:150s} {:20s}\n".format(
+        #     "{:40s} {:3.06f} {:10s} {:20s}\n".format(
         #         f"{name}:",
-        #         f"{list(disp.confusion_matrix)}",
+        #         round(cv_results.mean(), 6),
+        #         "({:1.06f})".format(round(cv_results.std(), 6)),
         #         f"(Aeg: {str(aeg2)})",
         #     )
         # )
         print(
-            "{:40s} {:150s} {:20s}".format(
+            "{:40s} {:3.06f} {:10s} {:20s}".format(
                 f"{name}:",
-                f"{list(disp.confusion_matrix)}",
+                round(cv_results.mean(), 6),
+                "({:1.06f})".format(round(cv_results.std(), 6)),
                 f"(Aeg: {str(aeg2)})",
             )
         )
     # f.write("\n")
 
+    pyplot.figure(figsize=(8, 6))
+    pyplot.boxplot(results, labels=names)
+    pyplot.title("Algoritmide täpsused")
+    pyplot.xticks(rotation=90)
+    pyplot.savefig(
+        nimi(
+            r"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Graafikud\Lõplikud\Sõnatüüpide efektiivsus ",
+            "png",
+        ),
+        bbox_inches="tight",
+        dpi=100,
+    )
+
+    pyplot.draw()
+
     lõpp = datetime.now()
     aeg = lõpp - algus
 
-    # f.write(f"Aeg: {aeg}\n\n\n")
+    # f.write(f"Aeg: {aeg}\n")
+    # f.write("\n\n")
     print(f"Aeg: {aeg}\n\n")
 
-    # f.close()
+
+# f.close()
 
 
-funktsioon(ds2, "universaalne", models)
+f(ds2, "universaalne", models)
 pyplot.show()
