@@ -56,6 +56,7 @@ def andmed():
     # seotakse koodi järgi eelnevate andmetega ja pannakse edasiseks kasutamiseks uude DataFrame objekti.
 
     tekstid = []
+    koodid = []
     oiged_margid = (
         "q",
         "w",
@@ -92,6 +93,9 @@ def andmed():
         " ",
     )
     failid = glob.glob(r"koik_dokumendid\*.txt")
+    # failid = glob.glob(
+    #     r"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\koik_dokumendid\*.txt"
+    # )
 
     # Tekstide töötlemine. Haruldased või tavapäratud ASCII märgid eemaldatakse tekstidest.
 
@@ -103,18 +107,19 @@ def andmed():
                 if y.lower() in oiged_margid:
                     x.replace(y, "")
             if x != "":
-                tekstid.append([x, failid[i][-25:-4]])
+                tekstid.append(x)
+                koodid.append([x, failid[i][-25:-4]])
             f.close()
 
-    toodeldud_failid = pd.DataFrame(tekstid, columns=["tekst", "kood"])
+    toodeldud_failid = pd.DataFrame(koodid, columns=["tekst", "kood"])
     uus_dataset = pd.merge(dataset, toodeldud_failid, on="kood")
     uus_dataset = uus_dataset.drop(uus_dataset.columns[[1]], axis=1)
 
-    return uus_dataset
+    return uus_dataset, tekstid
 
 
 if __name__ == "__main__":
-    ds = andmed()
+    ds = andmed()[0]
 
     print("Andmestiku veerud:")
     [print("   ", i) for i in ds.columns]
