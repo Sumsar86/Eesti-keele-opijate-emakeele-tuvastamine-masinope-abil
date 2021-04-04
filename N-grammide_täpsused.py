@@ -1,8 +1,8 @@
-from Andmete_sisselaadimine import andmed
-from datetime import datetime
-from matplotlib.colors import Normalize
 import numpy as np
+from Andmete_sisselaadimine import andmed, nimi
+from datetime import datetime
 from matplotlib import pyplot
+from matplotlib.colors import Normalize
 from sklearn import preprocessing
 from sklearn.model_selection import cross_val_score, StratifiedKFold, train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
@@ -66,16 +66,24 @@ models = [
 
 dataset, tekstid = andmed()
 
-for ngrammi_tahis in range(2):
+korduste_arv = 1
+ngrammi_suurused = (1, 8)
+ngrammi_aste = 1
+df_suurused = (0, 13)
+df_aste = 2
+
+for ngrammi_tahis in range(1):
     for ngrammi_tuup in ["word", "char", "char_wb"]:
         print(ngrammi_tuup, ngrammi_tahis)
         lopp_tulemused = []
-        for o in range(2):
+        for o in range(korduste_arv):
             tul1 = []
             algus = datetime.now()
-            for ngrammi_suurus in range(1, 8):
+            for ngrammi_suurus in range(
+                ngrammi_suurused[0], ngrammi_suurused[1], ngrammi_aste
+            ):
                 tul2 = []
-                for df_suurus in range(0, 13, 2):
+                for df_suurus in range(df_suurused[0], df_suurused[1], df_aste):
                     if ngrammi_tahis == 0:
                         xvektorid = CountVectorizer(
                             ngram_range=(
@@ -114,6 +122,7 @@ for ngrammi_tahis in range(2):
             lopp_tulemused.append(tul1)
 
         toodeldud_andmed = andmete_tootlus(jar=lopp_tulemused)
+
         pyplot.figure(figsize=(8, 8))
 
         try:
@@ -125,21 +134,29 @@ for ngrammi_tahis in range(2):
             pyplot.xlabel("N-gramm")
             pyplot.ylabel("Muutuja df_size")
             pyplot.colorbar()
-            pyplot.xticks(np.arange(7), [1, 2, 3, 4, 5, 6, 7])
-            pyplot.yticks(np.arange(7), [0, 2, 4, 6, 8, 10, 12])
+            x = np.ceil((ngrammi_suurused[1] - ngrammi_suurused[0]) / ngrammi_aste)
+            y = np.ceil((df_suurused[1] - df_suurused[0]) / df_aste)
+            pyplot.xticks(
+                np.arange(x),
+                list(range(ngrammi_suurused[0], ngrammi_suurused[1], ngrammi_aste)),
+            )
+            pyplot.yticks(
+                np.arange(y), list(range(df_suurused[0], df_suurused[1], df_aste))
+            )
             pyplot.title(
                 str(f"N-grammi tüüp: {ngrammi_tahis}, N-grammi tüüp {ngrammi_tuup}")
             )
             pyplot.draw()
+
             # pyplot.savefig(
             #     nimi(
-            #         rf"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Graafikud\N-grammi tüüp {ngrammi_tuup} kombinatsioon(0n_1y) {ngrammi_tahis}",
-            #         "png",
+            #         f"graafikud/täpsused ngramm {ngrammi_tahis} {ngrammi_tuup}",
+            #         "png"
             #     ),
             #     bbox_inches="tight",
             #     dpi=100,
             # )
-            # pyplot.close()
+
         except TypeError:
             print(
                 ngrammi_tahis,
@@ -150,4 +167,6 @@ for ngrammi_tahis in range(2):
 
         lõpp = datetime.now()
         aeg = lõpp - algus
+
 pyplot.show()
+pyplot.close()

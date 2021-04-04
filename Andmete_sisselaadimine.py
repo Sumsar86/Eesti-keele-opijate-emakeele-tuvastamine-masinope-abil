@@ -1,6 +1,13 @@
+import os
 import pandas as pd
 import glob
 
+
+def nimi(koht, lõpp):
+    i = 0
+    while os.path.exists(rf"{koht} {i}.{lõpp}"):
+        i += 1
+    return rf"{koht} {i}.{lõpp}"
 
 def andmed():
 
@@ -92,10 +99,10 @@ def andmed():
         "š",
         " ",
     )
-    failid = glob.glob(r"koik_dokumendid\*.txt")
-    # failid = glob.glob(
-    #     r"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\koik_dokumendid\*.txt"
-    # )
+    # failid = glob.glob(r"koik_dokumendid\*.txt")
+    failid = glob.glob(
+        r"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\koik_dokumendid\*.txt"
+    )
 
     # Tekstide töötlemine. Haruldased või tavapäratud ASCII märgid eemaldatakse tekstidest.
 
