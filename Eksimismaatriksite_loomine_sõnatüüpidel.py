@@ -1,8 +1,8 @@
-from datetime import datetime
-import os
 import time
 import pandas as pd
 import numpy as np
+from datetime import datetime
+from Andmete_sisselaadimine import nimi
 from matplotlib import pyplot
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
@@ -22,6 +22,66 @@ from sklearn.discriminant_analysis import (
 )
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.svm import SVC, NuSVC
+
+
+def funktsioon(ds, m):
+    algus = datetime.now()
+
+    array = ds.values
+    x = np.array(array[:, 1:])
+    y = np.array(array[:, :1])
+
+    scaler = preprocessing.StandardScaler().fit(x)
+    X_scaled = scaler.transform(x)
+
+    X_train, X_validation, Y_train, Y_validation = train_test_split(
+        X_scaled, y, test_size=0.20, shuffle=True
+    )
+
+    print("\n\nsõnatüübid")
+    print(f"{time.ctime(time.time())}")
+    print("andmepunktid: {}, tunnused: 17\n".format(len(X_train)))
+
+    for name, model in m:
+        algus2 = datetime.now()
+
+        model.fit(X_train, Y_train)
+
+        names = ["eesti", "soome", "vene"]
+
+        disp = plot_confusion_matrix(
+            model,
+            X_validation,
+            Y_validation,
+            display_labels=names,
+            cmap=pyplot.cm.Blues,
+            normalize="true",
+        )
+        disp.ax_.set_title(f"Normaliseeritud eksimismaatriks {name}")
+
+        pyplot.draw()
+        pyplot.savefig(
+            nimi("graafikud/Normaliseeritud eksimismaatriks {name} ", "png"),
+            bbox_inches="tight",
+            dpi=100,
+        )
+
+        lõpp2 = datetime.now()
+        aeg2 = lõpp2 - algus2
+
+        print(
+            "{:40s} {:150s} {:20s}".format(
+                f"{name}:",
+                f"{list(disp.confusion_matrix)}",
+                f"(Aeg: {str(aeg2)})",
+            )
+        )
+
+    lõpp = datetime.now()
+    aeg = lõpp - algus
+
+    print(f"Aeg: {aeg}\n\n")
+
 
 url1 = "http://www.tlu.ee/~jaagup/andmed/keel/korpus/dokmeta.txt"
 url2 = "http://www.tlu.ee/~jaagup/andmed/keel/korpus/doksonaliigid.txt"
@@ -177,95 +237,5 @@ models = [
     ),
 ]
 
-
-def nimi(koht, lõpp):
-    i = 0
-    while os.path.exists(rf"{koht} {i}.{lõpp}"):
-        i += 1
-    return rf"{koht} {i}.{lõpp}"
-
-
-def funktsioon(ds, keel, m):
-    algus = datetime.now()
-
-    array = ds.values
-    x = np.array(array[:, 1:])
-    y = np.array(array[:, :1])
-
-    scaler = preprocessing.StandardScaler().fit(x)
-    X_scaled = scaler.transform(x)
-
-    X_train, X_validation, Y_train, Y_validation = train_test_split(
-        X_scaled, y, test_size=0.20, shuffle=True
-    )
-
-    names = []
-    olek = "sõnatüübid"
-    # f = open(
-    #     r"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Graafikud\Log.txt",
-    #     "a",
-    # )
-    # f.write(f"{keel.capitalize()} {olek}\n")
-    # f.write(f"{time.ctime(time.time())}\n")
-    # f.write("andmepunktid: {}, tunnused: 17\n".format(len(X_train)))
-    print(f"\n\n{keel.capitalize()} {olek}")
-    print(f"{time.ctime(time.time())}")
-    print("andmepunktid: {}, tunnused: 17\n".format(len(X_train)))
-
-    for name, model in m:
-        algus2 = datetime.now()
-
-        model.fit(X_train, Y_train)
-
-        names = ["eesti", "soome", "vene"]
-
-        disp = plot_confusion_matrix(
-            model,
-            X_validation,
-            Y_validation,
-            display_labels=names,
-            cmap=pyplot.cm.Blues,
-            normalize="true",
-        )
-        disp.ax_.set_title(f"Normaliseeritud eksimismaatriks {name}")
-
-        pyplot.draw()
-        # pyplot.savefig(
-        #     nimi(
-        #         fr"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Graafikud\Lõplikud\Normaliseeritud eksimismaatriks {name} ",
-        #         "png",
-        #     ),
-        #     bbox_inches="tight",
-        #     dpi=100,
-        # )
-
-        lõpp2 = datetime.now()
-        aeg2 = lõpp2 - algus2
-
-        # f.write(
-        #     "{:40s} {:150s} {:20s}\n".format(
-        #         f"{name}:",
-        #         f"{list(disp.confusion_matrix)}",
-        #         f"(Aeg: {str(aeg2)})",
-        #     )
-        # )
-        print(
-            "{:40s} {:150s} {:20s}".format(
-                f"{name}:",
-                f"{list(disp.confusion_matrix)}",
-                f"(Aeg: {str(aeg2)})",
-            )
-        )
-    # f.write("\n")
-
-    lõpp = datetime.now()
-    aeg = lõpp - algus
-
-    # f.write(f"Aeg: {aeg}\n\n\n")
-    print(f"Aeg: {aeg}\n\n")
-
-    # f.close()
-
-
-funktsioon(ds2, "universaalne", models)
+funktsioon(ds2, models)
 pyplot.show()
