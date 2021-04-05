@@ -1,9 +1,11 @@
 import time
-from Andmete_sisselaadimine import andmed, nimi
+import pandas as pd
+import seaborn as sn
 from datetime import datetime
-from sklearn.metrics._plot.confusion_matrix import plot_confusion_matrix
 from matplotlib import pyplot
+from Andmete_sisselaadimine import andmed, nimi
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -18,31 +20,27 @@ from sklearn.ensemble import (
 )
 
 
-def treenimine(m):
+def treenimine(mud, vek, kee, n):
     algus = datetime.now()
 
-    print(f"\n\n{n['tuup']} {n['tahis']}")
+    X_train, X_validation, Y_train, Y_validation = train_test_split(
+        vek, kee, test_size=0.20, random_state=1, shuffle=True
+    )
+
+    results = []
+
+    print(f"\n\nN-grammide eksimismaatriksite loomine {n['tuup']} {n['tahis']}")
     print(f"{time.ctime(time.time())}")
     print(f"ngram size: {n['ngram_size']}, df size: {n['df_size']}")
-    print("andmepunktid: {0[0]}, tunnused: {0[1]}".format(vektorid.shape))
+    print("andmepunktid: {0[0]}, tunnused: {0[1]}".format(vek.shape))
 
-    for name, model in m:
+    for name, model in mud:
         algus2 = datetime.now()
 
         model.fit(X_train, Y_train)
+        pred = model.predict(X_validation)
 
-        names = ["eesti", "soome", "vene"]
-
-        disp = plot_confusion_matrix(
-            model,
-            X_validation,
-            Y_validation,
-            display_labels=names,
-            cmap=pyplot.cm.Blues,
-            normalize="true",
-        )
-        disp.ax_.set_title(f"Normaliseeritud eksimismaatriks {name}")
-        pyplot.draw()
+        results.append(confusion_matrix(Y_validation, pred, normalize="true"))
 
         lõpp2 = datetime.now()
         aeg2 = lõpp2 - algus2
@@ -54,21 +52,16 @@ def treenimine(m):
             )
         )
 
-        # pyplot.savefig(
-        #     nimi(
-        #         "graafikud/{} eksimismaatriks ngramm {} {}"
-        #         .format(name, n["tuup"], n["tahis"]),
-        #         "png"
-        #     ),
-        #     bbox_inches="tight",
-        #     dpi=100,
-        # )
-
     lõpp = datetime.now()
     aeg = lõpp - algus
 
     print(f"Aeg: {aeg}\n\n")
 
+    return results
+
+
+dataset, tekstid = andmed()
+tulemused = []
 
 models = [
     (
@@ -110,15 +103,13 @@ models = [
         ),
     ),
 ]
-
-dataset, tekstid = andmed()
 ngrammid = [
-    {"ngram_size": 4, "df_size": 6, "tuup": "char", "tahis": 0},
-    {"ngram_size": 1, "df_size": 2, "tuup": "word", "tahis": 0},
-    {"ngram_size": 6, "df_size": 4, "tuup": "char_wb", "tahis": 0},
-    {"ngram_size": 5, "df_size": 2, "tuup": "char", "tahis": 1},
-    {"ngram_size": 6, "df_size": 4, "tuup": "word", "tahis": 1},
-    {"ngram_size": 7, "df_size": 4, "tuup": "char_wb", "tahis": 1},
+    {"ngram_size": 4, "df_size": 6, "tahis": 0, "tuup": "char"},
+    {"ngram_size": 1, "df_size": 2, "tahis": 0, "tuup": "word"},
+    {"ngram_size": 6, "df_size": 4, "tahis": 0, "tuup": "char_wb"},
+    {"ngram_size": 5, "df_size": 2, "tahis": 1, "tuup": "char"},
+    {"ngram_size": 6, "df_size": 4, "tahis": 1, "tuup": "word"},
+    {"ngram_size": 7, "df_size": 4, "tahis": 1, "tuup": "char_wb"},
 ]
 
 for n in ngrammid:
@@ -139,11 +130,52 @@ for n in ngrammid:
 
     keeled = dataset["emakeel"].to_numpy()
 
-    X_train, X_validation, Y_train, Y_validation = train_test_split(
-        vektorid, keeled, test_size=0.20, random_state=1, shuffle=True
-    )
+    tulemused.append(treenimine(models, vektorid, keeled, n))
 
-    treenimine(models)
+
+nimed = [
+    "LOGISTIC REGRESSION",
+    "KNEIGHBRS",
+    "DECISION TREE CLASSIFIER",
+    "RANDOM FOREST CLASSIFIER",
+    "ADABOOST",
+    "GRADIENT BOOSTING",
+    "SGDCLASSIFIER",
+    "NUSVC RBF",
+    "MULTINOMAL NB",
+    "COMPLEMENT NB",
+    "BERNOULLI NB",
+    "MLPCLASSIFIER",
+]
+variandid = ["char_wb 0", "char_wb 1", "char 0", "char 1", "word 0", "word 1"]
+keeled = ["eesti", "soome", "vene"]
+uus_tulemused = [[] for _ in range(len(models))]
+
+for i in range(len(tulemused)):
+    for j in range(len(tulemused[i])):
+        uus_tulemused[j].append(tulemused[i][j])
+
+laius = 3
+korgus = 2
+
+for j in range(len(uus_tulemused)):
+    fig, axs = pyplot.subplots(2, laius, figsize=(15, 10))
+    fig.suptitle(f"Normaliseeritud eksimismaatriks {nimed[j]}")
+    for i in range(len(uus_tulemused[0])):
+        axs[i // laius, i % laius].set_title(variandid[i])
+        df_cm = pd.DataFrame(uus_tulemused[j][i], index=keeled, columns=keeled)
+        sn.heatmap(
+            df_cm, annot=True, cmap=pyplot.cm.Blues, ax=axs[i // laius, i % laius]
+        )
+    pyplot.draw()
+    pyplot.savefig(
+        nimi(
+            rf"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Graafikud\Normaliseeritud eksimismaatriks {nimed[j]} ngrammid",
+            "png",
+        ),
+        bbox_inches="tight",
+        dpi=100,
+    )
 
 pyplot.show()
 pyplot.close()

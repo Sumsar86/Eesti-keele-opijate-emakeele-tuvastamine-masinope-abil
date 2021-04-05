@@ -23,7 +23,7 @@ from sklearn.ensemble import (
 def treenimine(m):
     algus = datetime.now()
 
-    print(f"\n\n{n['tuup']} {n['tahis']}")
+    print(f"\n\nN-grammidega ennustamine {n['tuup']} {n['tahis']}")
     print(f"{time.ctime(time.time())}")
     print(f"ngram size: {n['ngram_size']}, df size: {n['df_size']}")
     print("andmepunktid: {0[0]}, tunnused: {0[1]}".format(vektorid.shape))
@@ -46,6 +46,9 @@ def treenimine(m):
         results.append(cv_results)
         names.append(name)
 
+        lõpp2 = datetime.now()
+        aeg2 = lõpp2 - algus2
+
         print(
             "{:40s} {:3.06f} {:10s} {:20s}".format(
                 f"{name}:",
@@ -54,9 +57,6 @@ def treenimine(m):
                 f"(Aeg: {str(aeg2)})",
             )
         )
-
-        lõpp2 = datetime.now()
-        aeg2 = lõpp2 - algus2
 
     lõpp = datetime.now()
     aeg = lõpp - algus
