@@ -170,7 +170,7 @@ for j in range(len(uus_tulemused)):
     pyplot.draw()
     pyplot.savefig(
         nimi(
-            rf"C:\Users\rasmu\OneDrive\Töölaud\Programmid\Python 3\Uurimistöö\Graafikud\Normaliseeritud eksimismaatriks {nimed[j]} ngrammid",
+            f"graafikud/Normaliseeritud eksimismaatriks {nimed[j]} ngrammid",
             "png",
         ),
         bbox_inches="tight",
