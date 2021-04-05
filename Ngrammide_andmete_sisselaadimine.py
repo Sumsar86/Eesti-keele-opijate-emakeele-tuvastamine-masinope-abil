@@ -1,6 +1,18 @@
 import os
+import numpy as np
 import pandas as pd
 import glob
+from matplotlib.colors import Normalize
+
+
+class MidpointNormalize(Normalize):
+    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+        self.midpoint = midpoint
+        Normalize.__init__(self, vmin, vmax, clip)
+
+    def __call__(self, value, clip=None):
+        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        return np.ma.masked_array(np.interp(value, x, y))
 
 
 def nimi(koht, lõpp):
@@ -8,6 +20,7 @@ def nimi(koht, lõpp):
     while os.path.exists(rf"{koht} {i}.{lõpp}"):
         i += 1
     return rf"{koht} {i}.{lõpp}"
+
 
 def andmed():
 

@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sn
 from datetime import datetime
 from matplotlib import pyplot
-from Andmete_sisselaadimine import andmed, nimi
+from Ngrammide_andmete_sisselaadimine import andmed, nimi
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.neural_network import MLPClassifier

@@ -1,22 +1,11 @@
 import numpy as np
-from Andmete_sisselaadimine import andmed, nimi
+from Ngrammide_andmete_sisselaadimine import MidpointNormalize, andmed, nimi
 from datetime import datetime
 from matplotlib import pyplot
-from matplotlib.colors import Normalize
 from sklearn import preprocessing
 from sklearn.model_selection import cross_val_score, StratifiedKFold, train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
-
-
-class MidpointNormalize(Normalize):
-    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
-        self.midpoint = midpoint
-        Normalize.__init__(self, vmin, vmax, clip)
-
-    def __call__(self, value, clip=None):
-        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
-        return np.ma.masked_array(np.interp(value, x, y))
 
 
 def andmete_tootlus(jar=None, x=None, y=None):
@@ -148,14 +137,13 @@ for ngrammi_tahis in range(1):
             )
             pyplot.draw()
 
-            # pyplot.savefig(
-            #     nimi(
-            #         f"graafikud/täpsused ngramm {ngrammi_tahis} {ngrammi_tuup}",
-            #         "png"
-            #     ),
-            #     bbox_inches="tight",
-            #     dpi=100,
-            # )
+            pyplot.savefig(
+                nimi(
+                    f"graafikud/täpsused ngramm {ngrammi_tahis} {ngrammi_tuup}", "png"
+                ),
+                bbox_inches="tight",
+                dpi=100,
+            )
 
         except TypeError:
             print(

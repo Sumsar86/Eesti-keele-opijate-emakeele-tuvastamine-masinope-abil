@@ -1,7 +1,6 @@
 import time
-
 import numpy as np
-from Andmete_sisselaadimine import andmed, nimi
+from Ngrammide_andmete_sisselaadimine import andmed, nimi
 from datetime import datetime
 from matplotlib import pyplot
 from sklearn import preprocessing
