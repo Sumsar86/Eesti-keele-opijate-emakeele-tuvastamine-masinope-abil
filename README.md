@@ -1,2 +1,2 @@
-# Eesti keele oppijate emakeele tuvastamine masinoppe abil
+# Eesti keele õppijate emakeele tuvastamine masinõppe abil
  Uurimistöös kasutatud Pythoni kood
